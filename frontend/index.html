@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Voting and Polling</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --secondary-color: #3f37c9;
+            --danger-color: #ef476f;
+            --danger-hover: #d64062;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --light-bg: #f8f9fa;
+            --dark-text: #212529;
+            --light-text: #f8f9fa;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+            color: var(--dark-text);
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            background-color: white;
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+        
+        .section:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        button {
+            padding: 10px 18px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin-right: 10px;
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        
+        input, select {
+            padding: 12px;
+            margin-right: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            width: 100%;
+            transition: var(--transition);
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .error {
+            color: var(--danger-color);
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(239, 71, 111, 0.1);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .success {
+            color: var(--success-color);
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(6, 214, 160, 0.1);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        #loginSection {
+            text-align: center;
+            margin: 80px auto;
+            max-width: 450px;
+            padding: 35px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        #loginSection h1 {
+            margin-bottom: 25px;
+            color: var(--primary-color);
+        }
+        
+        #loginSection input {
+            width: 100%;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            padding: 15px;
+        }
+        
+        #loginSection button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        #mainContent {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .password-hint {
+            font-style: italic;
+            color: #666;
+            margin-top: 15px;
+            font-size: 0.9em;
+            background-color: rgba(255, 209, 102, 0.1);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .password-hint ul {
+            margin-top: 8px;
+        }
+        
+        .password-hint li {
+            margin-bottom: 5px;
+        }
+        
+        .logout-btn {
+            background-color: var(--danger-color);
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--danger-hover);
+        }
+        
+        .user-info {
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+        }
+        
+        #welcomeMessage {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .char-count-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        #charCount {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            font-size: 0.8em;
+            color: #666;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginSection">
+        <h1>Real-Time Voting System</h1>
+        <div>
+            <input type="text" id="username" placeholder="Enter your username">
+            <input type="password" id="password" placeholder="Enter your password">
+            <button onclick="login()">Login</button>
+            <div id="loginResult"></div>
+            <p class="password-hint">Hint: The password is "test" for all users</p>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <div class="user-info">
+            <span id="welcomeMessage">Welcome, User!</span>
+            <div>
+                <span id="backendStatus" style="margin-right: 15px; font-size: 0.9em;"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        
+        <h1>Real-Time Voting and Polling</h1>
+        <h2 style = "text-align: left;">SCU Presidential Elections</h2>
+
+        
+        <div class="section">
+            <h2>List of Candidates</h2>
+            <div id="topicsList" class="results">No polls available</div>
+        </div>
+        
+        <div class="section">
+            <h2>Cast Your Vote</h2>
+            <div class="input-group">
+                <select id="topicSelect">
+                    <option value="">select a candidate</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <input type="text" id="voterName" placeholder="Enter your name">
+                <input type="text" id="voteOption" placeholder="Enter your vote">
+            </div>
+            <div class="action-buttons">
+                <button onclick="castVote()">Submit Vote</button>
+            </div>
+            <div id="voteResult" class="results"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Election Results</h2>
+            <div class="input-group">
+                <select id="resultsTopicSelect">
+                    <option value="">select a candidate</option>
+                </select>
+            </div>
+            <div class="action-buttons">
+                <button onclick="getPollResults()">Get Results</button>
+            </div>
+            <div id="pollResults" class="results">No results available</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const publisherBaseUrl = 'http://localhost:8081/api';
+        const subscriberBaseUrl = 'http://localhost:8082/api';
+        
+        // Login functionality
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!username) {
+                document.getElementById('loginResult').innerHTML = '<div class="error">Please enter a username</div>';
+                return;
+            }
+            
+            if (password === 'test') {
+                // Store username in session storage
+                sessionStorage.setItem('username', username);
+                sessionStorage.setItem('isLoggedIn', 'true');
+                
+                // Update welcome message
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${username}!`;
+                
+                // Pre-fill voter name field with the username
+                document.getElementById('voterName').value = username;
+                
+                // Show main content and hide login section
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+                // Initialize topics and start periodic refresh
+                getTopics();
+                startPeriodicRefresh();
+            } else {
+                document.getElementById('loginResult').innerHTML = '<div class="error">Incorrect password. Remember, the password is "test"</div>';
+            }
+        }
+        
+        function logout() {
+            // Clear all intervals
+            for (let i = 1; i < 99999; i++) {
+                window.clearInterval(i);
+            }
+            
+            // Clear session storage
+            sessionStorage.removeItem('username');
+            sessionStorage.removeItem('isLoggedIn');
+            
+            // Show login section and hide main content
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('mainContent').style.display = 'none';
+            
+            // Clear password field
+            document.getElementById('password').value = '';
+            document.getElementById('loginResult').innerHTML = '';
+        }
+        
+        // Helper function to get current timestamp
+        function getCurrentTimestamp() {
+            return Date.now();
+        }
+        
+        // Helper function to handle API errors
+        function handleApiError(error, elementId) {
+            console.error('API Error:', error);
+            document.getElementById(elementId).innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        }
+        
+        // Get all available topics (polls)
+        async function getTopics() {
+            try {
+                const timestamp = getCurrentTimestamp();
+                console.log(`Fetching topics from ${publisherBaseUrl}/topics?timestamp=${timestamp}`);
+                
+                // First, check the leader broker
+                const leaderResponse = await fetch(`${publisherBaseUrl}/leader-broker?timestamp=${timestamp}`);
+                const leaderBroker = await leaderResponse.text();
+                console.log(`Current leader broker: ${leaderBroker}`);
+                
+                const response = await fetch(`${publisherBaseUrl}/topics?timestamp=${timestamp}`);
+                
+                if (response.ok) {
+                    const topics = await response.json();
+                    console.log(`Received topics: ${JSON.stringify(topics)}`);
+                    updateTopicsLists(topics);
+                } else {
+                    throw new Error(`Failed to get polls: ${response.statusText}`);
+                }
+            } catch (error) {
+                handleApiError(error, 'topicsList');
+            }
+        }
+        
+        // Update all topic select dropdowns
+        function updateTopicsLists(topics) {
+            // Update the topics list display
+            if (topics.length === 0) {
+                document.getElementById('topicsList').innerHTML = 'No polls available';
+            } else {
+                document.getElementById('topicsList').innerHTML = topics.map(topic => 
+                    `<div style="padding: 8px 0; border-bottom: 1px solid #eee;">${topic}</div>`
+                ).join('');
+            }
+            
+            // Update all select dropdowns
+            const selects = ['topicSelect', 'resultsTopicSelect'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                // Save the current selection
+                const currentValue = select.value;
+                
+                // Clear options except the first one
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+                
+                // Add new options
+                topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic;
+                    option.text = topic;
+                    select.add(option);
+                });
+                
+                // Restore selection if it still exists
+                if (topics.includes(currentValue)) {
+                    select.value = currentValue;
+                }
+            });
+        }
+        
+        // Cast a vote (publish a message)
+        async function castVote() {
+            const topic = document.getElementById('topicSelect').value;
+            const vote = document.getElementById('voteOption').value.trim();
+            const name = document.getElementById('voterName').value.trim();
+            
+            if (!topic) {
+                document.getElementById('voteResult').innerHTML = '<div class="error">Please select a candidate</div>';
+                return;
+            }
+            
+            if (!name) {
+                document.getElementById('voteResult').innerHTML = '<div class="error">Please enter your name</div>';
+                return;
+            }
+            
+            if (!vote) {
+                document.getElementById('voteResult').innerHTML = '<div class="error">Please enter your vote</div>';
+                return;
+            }
+            
+            try {
+                const timestamp = getCurrentTimestamp();
+                // Create a JSON object with name and vote
+                const voteData = JSON.stringify({
+                    name: name,
+                    vote: vote
+                });
+                
+                const response = await fetch(`${publisherBaseUrl}/publish?topic=${encodeURIComponent(topic)}&timestamp=${timestamp}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: voteData
+                });
+                
+                if (response.ok) {
+                    document.getElementById('voteResult').innerHTML = `<div class="success">Vote "${vote}" from "${name}" submitted for poll "${topic}"!</div>`;
+                    document.getElementById('voteOption').value = '';
+                } else {
+                    throw new Error(`Failed to submit vote: ${response.statusText}`);
+                }
+            } catch (error) {
+                handleApiError(error, 'voteResult');
+            }
+        }
+        
+        // Get Election Results (messages for a topic)
+        async function getPollResults() {
+            const topic = document.getElementById('resultsTopicSelect').value;
+            
+            if (!topic) {
+                document.getElementById('pollResults').innerHTML = '<div class="error">Please select a candidate</div>';
+                return;
+            }
+            
+            try {
+                const timestamp = getCurrentTimestamp();
+                document.getElementById('pollResults').innerHTML = '<div>Loading results...</div>';
+                
+                console.log(`Fetching Election Results for topic "${topic}" from ${subscriberBaseUrl}/messages/${encodeURIComponent(topic)}?timestamp=${timestamp}`);
+                
+                // First, check subscribed topics
+                const subscribedResponse = await fetch(`${subscriberBaseUrl}/subscribed-topics?timestamp=${timestamp}`);
+                
+                if (!subscribedResponse.ok) {
+                    throw new Error(`Failed to get subscribed topics: ${subscribedResponse.statusText}`);
+                }
+                
+                const subscribedTopics = await subscribedResponse.json();
+                console.log(`Subscribed topics: ${JSON.stringify(subscribedTopics)}`);
+                
+                // Check if we're subscribed to this topic
+                let isSubscribed = subscribedTopics.includes(topic);
+                if (!isSubscribed) {
+                    console.log(`Not subscribed to topic "${topic}". Subscribing now...`);
+                    isSubscribed = await subscribeToPoll(topic);
+                    
+                    if (!isSubscribed) {
+                        throw new Error(`Failed to subscribe to topic "${topic}". Cannot fetch results.`);
+                    }
+                    
+                    // Add a small delay after subscribing to ensure the subscription is processed
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Fetch messages for the topic
+                const response = await fetch(`${subscriberBaseUrl}/messages/${encodeURIComponent(topic)}?timestamp=${timestamp}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to get results: ${response.statusText} (${response.status})`);
+                }
+                
+                const messages = await response.json();
+                console.log(`Received messages for topic "${topic}": ${JSON.stringify(messages)}`);
+                
+                if (!Array.isArray(messages)) {
+                    throw new Error(`Unexpected response format. Expected array but got: ${typeof messages}`);
+                }
+                
+                if (messages.length === 0) {
+                    // Try subscribing again and fetching one more time
+                    console.log("No messages found. Trying to resubscribe and fetch again...");
+                    await subscribeToPoll(topic);
+                    
+                    // Add a delay before trying again
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    const retryResponse = await fetch(`${subscriberBaseUrl}/messages/${encodeURIComponent(topic)}?timestamp=${getCurrentTimestamp()}`);
+                    
+                    if (!retryResponse.ok) {
+                        throw new Error(`Failed to get results on retry: ${retryResponse.statusText}`);
+                    }
+                    
+                    const retryMessages = await retryResponse.json();
+                    console.log(`Retry received messages: ${JSON.stringify(retryMessages)}`);
+                    
+                    if (!Array.isArray(retryMessages) || retryMessages.length === 0) {
+                        document.getElementById('pollResults').innerHTML = `
+                            <div>No votes for this poll yet.</div>
+                            <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                                Note: If you've just cast votes, it may take a moment for them to appear.
+                                <button onclick="getPollResults()" style="margin-top: 10px; padding: 5px 10px;">Try Again</button>
+                            </div>
+                        `;
+                        return;
+                    } else {
+                        // Use the retry messages
+                        processAndDisplayResults(topic, retryMessages);
+                    }
+                } else {
+                    // Process and display the results
+                    processAndDisplayResults(topic, messages);
+                }
+            } catch (error) {
+                console.error('Error fetching Election Results:', error);
+                document.getElementById('pollResults').innerHTML = `
+                    <div class="error">
+                        Error: ${error.message}
+                        <div style="margin-top: 10px;">
+                            <button onclick="getPollResults()">Try Again</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Helper function to process and display Election Results
+        function processAndDisplayResults(topic, messages) {
+            // Count votes
+            const voteCounts = {};
+            const votersByOption = {};
+            
+            messages.forEach(message => {
+                let vote, name;
+                
+                try {
+                    // Try to parse as JSON
+                    const data = JSON.parse(message);
+                    vote = data.vote;
+                    name = data.name;
+                } catch (e) {
+                    // If not JSON, treat the whole message as the vote (for backward compatibility)
+                    vote = message;
+                    name = "Anonymous";
+                }
+                
+                // Count the vote
+                voteCounts[vote] = (voteCounts[vote] || 0) + 1;
+                
+                // Add voter to the list
+                if (!votersByOption[vote]) {
+                    votersByOption[vote] = [];
+                }
+                votersByOption[vote].push(name);
+            });
+            
+            // Display results
+            const resultsHtml = Object.entries(voteCounts)
+                .map(([option, count]) => {
+                    const voters = votersByOption[option].join(', ');
+                    const percentage = Math.round((count / messages.length) * 100);
+                    const barWidth = percentage + '%';
+                    
+                    return `
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong>${option}</strong>
+                                <span>${count} vote(s) (${percentage}%)</span>
+                            </div>
+                            <div style="background-color: #e9ecef; height: 20px; border-radius: 4px; overflow: hidden;">
+                                <div style="background-color: var(--primary-color); height: 100%; width: ${barWidth};"></div>
+                            </div>
+                            <div style="font-size: 0.9em; margin-top: 5px;">Voters: ${voters}</div>
+                        </div>
+                    `;
+                })
+                .join('');
+            
+            document.getElementById('pollResults').innerHTML = `
+                <h3>Results for "${topic}"</h3>
+                <div>${resultsHtml}</div>
+                <div style="margin-top: 15px; font-weight: bold;">Total votes: ${messages.length}</div>
+                <div style="margin-top: 10px;">
+                    <button onclick="getPollResults()" style="background-color: var(--success-color);">Refresh Results</button>
+                </div>
+            `;
+        }
+        
+        // Helper function to subscribe to a topic programmatically
+        async function subscribeToPoll(topic) {
+            try {
+                const timestamp = getCurrentTimestamp();
+                console.log(`Attempting to subscribe to topic "${topic}"...`);
+                
+                const response = await fetch(`${subscriberBaseUrl}/subscribe?timestamp=${timestamp}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: topic
+                });
+                
+                if (response.ok) {
+                    console.log(`Subscribed to topic "${topic}" successfully`);
+                    return true;
+                } else {
+                    console.error(`Failed to subscribe to topic "${topic}": ${response.statusText} (${response.status})`);
+                    return false;
+                }
+            } catch (error) {
+                console.error(`Error subscribing to topic "${topic}":`, error);
+                return false;
+            }
+        }
+        
+        // Check if user is already logged in (from a previous session)
+        window.onload = function() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+            const username = sessionStorage.getItem('username');
+            
+            if (isLoggedIn && username) {
+                // Update welcome message
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${username}!`;
+                
+                // Pre-fill voter name field with the username
+                document.getElementById('voterName').value = username;
+                
+                // Show main content and hide login section
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+                // Initialize topics and start periodic refresh
+                getTopics();
+                startPeriodicRefresh();
+                
+                // Check backend status
+                checkBackendStatus();
+            }
+        };
+        
+        // Function to start periodic refresh of topics
+        function startPeriodicRefresh() {
+            // Refresh topics every 5 seconds
+            setInterval(getTopics, 5000);
+        }
+        
+        // Function to check backend status
+        async function checkBackendStatus() {
+            const statusElement = document.getElementById('backendStatus');
+            statusElement.innerHTML = 'Checking connection...';
+            
+            try {
+                // Check publisher status
+                const publisherTimestamp = getCurrentTimestamp();
+                const publisherResponse = await fetch(`${publisherBaseUrl}/topics?timestamp=${publisherTimestamp}`, { 
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                // Check subscriber status
+                const subscriberTimestamp = getCurrentTimestamp();
+                const subscriberResponse = await fetch(`${subscriberBaseUrl}/subscribed-topics?timestamp=${subscriberTimestamp}`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (publisherResponse.ok && subscriberResponse.ok) {
+                    statusElement.innerHTML = '<span style="color: var(--success-color);">●</span> Connected';
+                } else if (publisherResponse.ok) {
+                    statusElement.innerHTML = '<span style="color: var(--warning-color);">●</span> Publisher OK, Subscriber Error';
+                } else if (subscriberResponse.ok) {
+                    statusElement.innerHTML = '<span style="color: var(--warning-color);">●</span> Subscriber OK, Publisher Error';
+                } else {
+                    statusElement.innerHTML = '<span style="color: var(--danger-color);">●</span> Connection Error';
+                }
+            } catch (error) {
+                console.error('Backend status check failed:', error);
+                statusElement.innerHTML = '<span style="color: var(--danger-color);">●</span> Connection Error';
+            }
+            
+            // Schedule next check
+            setTimeout(checkBackendStatus, 30000); // Check every 30 seconds
+        }
+        
+        // Add event listener for Enter key on login inputs
+        document.getElementById('username').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('password').focus();
+            }
+        });
+        
+        document.getElementById('password').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html> 
